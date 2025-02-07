@@ -1,50 +1,48 @@
 const express = require('express');
 const http = require('http');
-const { Server } = require('socket.io');
-const cors = require('cors');
+const socketIo = require('socket.io');
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, {
+const io = socketIo(server, {
     cors: {
-        origin: "*",
+        origin: "*",  // अगर सिर्फ अपने domain के लिए रखना है तो इसे बदलो
         methods: ["GET", "POST"]
     }
 });
 
-app.use(cors());
-app.use(express.static('public'));
+let users = {};  
 
-let waitingUser = null;
+io.on('connection', socket => {
+    console.log('New user connected:', socket.id);
 
-io.on('connection', (socket) => {
-    console.log('A user connected:', socket.id);
+    socket.on('join-room', peerId => {
+        users[socket.id] = peerId;
+        const otherUsers = Object.keys(users).filter(id => id !== socket.id);
+        if (otherUsers.length > 0) {
+            const randomUser = otherUsers[Math.floor(Math.random() * otherUsers.length)];
+            io.to(randomUser).emit('user-connected', peerId);
+            io.to(socket.id).emit('user-connected', users[randomUser]);
+        }
+    });
 
-    if (waitingUser) {
-        io.to(socket.id).emit('user-connected', waitingUser);
-        io.to(waitingUser).emit('user-connected', socket.id);
-        waitingUser = null;
-    } else {
-        waitingUser = socket.id;
-    }
-
-    socket.on('send-message', (message) => {
+    socket.on('send-message', message => {
+        console.log("Message received:", message);
         socket.broadcast.emit('receive-message', message);
     });
 
     socket.on('find-new-partner', () => {
-        waitingUser = socket.id;
+        delete users[socket.id];
+        socket.broadcast.emit('partner-left');
     });
 
     socket.on('disconnect', () => {
         console.log('User disconnected:', socket.id);
-        if (waitingUser === socket.id) {
-            waitingUser = null;
-        }
+        delete users[socket.id];
+        socket.broadcast.emit('partner-left');
     });
 });
 
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+server.listen(3000, () => {
+    console.log("Server running on port 3000");
 });
