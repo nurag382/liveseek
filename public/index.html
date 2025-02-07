@@ -3,29 +3,92 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LiveSeek - Video Call & Chat</title>
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.3.1/peerjs.min.js"></script>
-    <script defer src="script.js"></script>
-    <style>
-        body { font-family: Arial, sans-serif; text-align: center; background: #222; color: white; }
-        #video-grid { display: flex; justify-content: center; flex-wrap: wrap; }
-        video { width: 45%; max-width: 300px; margin: 5px; border: 2px solid white; }
-        #chat-container { margin-top: 10px; }
-        #messages { height: 200px; overflow-y: auto; border: 1px solid white; padding: 10px; }
-        input, button { padding: 10px; margin: 5px; }
-    </style>
+    <title>LiveSeek - Video Chat</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1>LiveSeek - Video Call & Chat</h1>
-    
-    <div id="video-grid"></div>
-
-    <div id="chat-container">
-        <h2>Chat</h2>
-        <div id="messages"></div>
-        <input type="text" id="messageInput" placeholder="Type a message...">
-        <button onclick="sendMessage()">Send</button>
+    <div class="container">
+        <h1>LiveSeek - Connect Instantly</h1>
+        <div class="video-container" id="video-container"></div>
+        <div class="chat-container">
+            <div id="chat-box"></div>
+            <input type="text" id="message-input" placeholder="Type a message...">
+            <button id="send-btn">Send</button>
+        </div>
     </div>
+    
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://unpkg.com/peerjs@1.3.1/dist/peerjs.min.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #121212;
+        color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+    }
+    .container {
+        text-align: center;
+        width: 80%;
+        max-width: 800px;
+        background: #1e1e1e;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+    }
+    .video-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+    video {
+        width: 100%;
+        max-width: 400px;
+        border-radius: 10px;
+        margin: 10px;
+        background: black;
+    }
+    .chat-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-top: 20px;
+    }
+    #chat-box {
+        width: 100%;
+        height: 200px;
+        overflow-y: auto;
+        border: 1px solid white;
+        padding: 10px;
+        margin-bottom: 10px;
+        background: #2a2a2a;
+        border-radius: 5px;
+    }
+    input, button {
+        padding: 10px;
+        font-size: 16px;
+        border-radius: 5px;
+        border: none;
+        outline: none;
+    }
+    input {
+        width: 70%;
+    }
+    button {
+        width: 25%;
+        background: #ff5722;
+        color: white;
+        cursor: pointer;
+    }
+    button:hover {
+        background: #e64a19;
+    }
+</style>
