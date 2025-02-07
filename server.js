@@ -6,19 +6,28 @@ const path = require('path');
 
 const app = express();
 const server = http.createServer(app);
-const io = socketIo(server);
+const io = socketIo(server, {
+    cors: {
+        origin: "*", // Allow all origins
+        methods: ["GET", "POST"]
+    }
+});
 
-// Public folder ko static serve karna
-app.use(express.static('public'));
+// 🔹 Render Ke Liye Port Fix
+const PORT = process.env.PORT || 10000; // Default port 10000 use kar lo
 
-// PeerJS server setup
-const peerServer = PeerServer({ port: 9000, path: '/' });
+// 🔹 Public Folder Serve Karna
+app.use(express.static(path.join(__dirname, 'public')));
 
-// Route for home page
+// 🔹 Home Page Route
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+// 🔹 PeerJS Server
+const peerServer = PeerServer({ port: 9000, path: '/' });
+
+// 🔹 WebSocket Connection
 io.on('connection', (socket) => {
     console.log('New user connected');
 
@@ -32,6 +41,5 @@ io.on('connection', (socket) => {
     });
 });
 
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-`
+// 🔹 Server Start
+server.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
