@@ -1,18 +1,62 @@
+// public/script.js (Frontend Logic)
 const socket = io();
-
-// 🔹 Chat Messages Send Karo
-document.getElementById("sendBtn").addEventListener("click", () => {
-    let message = document.getElementById("messageInput").value;
-    if (message.trim() !== "") {
-        socket.emit("chat message", message);
-        document.getElementById("messageInput").value = "";
-    }
+const peer = new Peer(undefined, {
+    host: "your-peer-server.com", // Replace with actual PeerJS server
+    port: 9000,
+    path: "/peer"
 });
 
-// 🔹 Chat Messages Receive Karo
-socket.on("chat message", (msg) => {
-    let chatBox = document.getElementById("chatBox");
-    let messageElement = document.createElement("p");
-    messageElement.textContent = msg;
-    chatBox.appendChild(messageElement);
+let myStream;
+let currentPeer;
+let myId;
+
+peer.on("open", (id) => {
+    myId = id;
+    socket.emit("join", id);
+});
+
+socket.on("match", (userId) => {
+    console.log("Matched with", userId);
+    connectToNewUser(userId);
+});
+
+function connectToNewUser(userId) {
+    navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+        .then((stream) => {
+            myStream = stream;
+            const call = peer.call(userId, stream);
+            call.on("stream", (userStream) => {
+                addVideoStream(userStream);
+            });
+            currentPeer = call;
+        });
+}
+
+peer.on("call", (call) => {
+    call.answer(myStream);
+    call.on("stream", (userStream) => {
+        addVideoStream(userStream);
+    });
+    currentPeer = call;
+});
+
+function addVideoStream(stream) {
+    const video = document.createElement("video");
+    video.srcObject = stream;
+    video.addEventListener("loadedmetadata", () => {
+        video.play();
+    });
+    document.getElementById("video-container").append(video);
+}
+
+document.getElementById("send-btn").addEventListener("click", () => {
+    const message = document.getElementById("message-input").value;
+    socket.emit("chat message", { message, to: currentPeer.peer });
+});
+
+socket.on("chat message", ({ message }) => {
+    const chatBox = document.getElementById("chat-box");
+    const msgElement = document.createElement("p");
+    msgElement.innerText = message;
+    chatBox.append(msgElement);
 });
