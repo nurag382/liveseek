@@ -1,15 +1,19 @@
 const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
+const path = require('path');
 
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
     cors: {
-        origin: "*",  // अगर सिर्फ अपने domain के लिए रखना है तो इसे बदलो
+        origin: "*",
         methods: ["GET", "POST"]
     }
 });
+
+// ✅ Static Files Serve (Fix for "Cannot GET /")
+app.use(express.static(path.join(__dirname, 'public')));
 
 let users = {};  
 
